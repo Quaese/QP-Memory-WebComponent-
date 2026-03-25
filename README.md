@@ -15,7 +15,7 @@ bundled local image set as fallback. Players flip pairs of cards to find matchin
 ```
 
 ```html
-<script type="module" src="/js/components-web/cover-memory/qp-memory.wc.js"></script>
+<script type="module" src="/js/components-web/qp-memory/qp-memory.wc.js"></script>
 ```
 
 ## Attributes
@@ -77,7 +77,7 @@ All visible text is resolved via `_dict()` (Dictionary module) with a built-in
 ## File Structure
 
 ```
-cover-memory/
+qp-memory/
   qp-memory.wc.js            — Web Component (main)
   qp-memory.styles.js        — Scoped styles (loaded via getStyles())
   qp-memory.dictionary.js    — i18n translations

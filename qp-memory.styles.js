@@ -1,4 +1,4 @@
-// public/js/components-web/cover-memory/qp-memory.styles.js
+// public/js/components-web/qp-memory/qp-memory.styles.js
 
 function getStyles(options) {
   options = Object.assign({}, { dimension: 3 }, options);

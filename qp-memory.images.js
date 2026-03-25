@@ -1,4 +1,4 @@
-// public/js/components-web/cover-memory/qp-memory.images.js
+// public/js/components-web/qp-memory/qp-memory.images.js
 
 const base = import.meta.url;
 const resolve = (path) => new URL(path, base).href;
