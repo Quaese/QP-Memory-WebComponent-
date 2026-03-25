@@ -94,7 +94,7 @@ function getStyles(options) {
         .qp-btn:disabled {
             cursor: default;
         }
-        .qp-btn:hover {
+        .qp-btn:hover:not(:disabled) {
             transform: translateY(-2px);
         }
 
@@ -109,15 +109,15 @@ function getStyles(options) {
         }
 
         .qp-btn-primary {
-          --qp-btn-color: #fff;
-          --qp-btn-bg: #0d6efd;
-          --qp-btn-border-color: #0d6efd;
-          --qp-btn-hover-color: #fff;
-          --qp-btn-hover-bg: #0b5ed7;
-          --qp-btn-hover-border-color: #0a58ca;
-          --qp-btn-disabled-color: #fff;
-          --qp-btn-disabled-bg: #0d6efd;
-          --qp-btn-disabled-border-color: #0d6efd;
+          --qp-btn-color: rgba(255, 255, 255, 1);
+          --qp-btn-bg: rgba(13, 110, 253, 1);
+          --qp-btn-border-color: rgba(13, 110, 253, 1);
+          --qp-btn-hover-color: rgba(255, 255, 255, 1);
+          --qp-btn-hover-bg: rgba(11, 94, 215, 1);
+          --qp-btn-hover-border-color: rgba(10, 88, 202, 1);
+          --qp-btn-disabled-color: rgba(255, 255, 255, 0.65);
+          --qp-btn-disabled-bg: rgba(13, 110, 253, 0.65);
+          --qp-btn-disabled-border-color: rgba(13, 110, 253, 0.65);
         }
         .qp-btn-primary {
           color: var(--qp-btn-color);
@@ -136,15 +136,15 @@ function getStyles(options) {
         }
           
         .qp-btn-secondary {
-          --qp-btn-color: #fff;
-          --qp-btn-bg: #6c757d;
-          --qp-btn-border-color: #6c757d;
-          --qp-btn-hover-color: #fff;
-          --qp-btn-hover-bg: #5c636a;
-          --qp-btn-hover-border-color: #565e64;
-          --qp-btn-disabled-color: #fff;
-          --qp-btn-disabled-bg: #6c757d;
-          --qp-btn-disabled-border-color: #6c757d;
+          --qp-btn-color: rgba(255, 255, 255, 1);
+          --qp-btn-bg: rgba(108, 117, 125, 1);
+          --qp-btn-border-color: rgba(108, 117, 125, 1);
+          --qp-btn-hover-color: rgba(255, 255, 255, 1);
+          --qp-btn-hover-bg: rgba(92, 99, 106, 1);
+          --qp-btn-hover-border-color: rgba(86, 94, 100, 1);
+          --qp-btn-disabled-color: rgba(255, 255, 255, 0.65);
+          --qp-btn-disabled-bg: rgba(108, 117, 125, 0.65);
+          --qp-btn-disabled-border-color: rgba(108, 117, 125, 0.65);
         }
         .qp-btn-secondary {
           color: var(--qp-btn-color);
@@ -163,16 +163,16 @@ function getStyles(options) {
         }
 
         .qp-btn-cta,
-        .qp-btn-success{
-            --qp-btn-color: #fff;
-            --qp-btn-bg: #198754;
-            --qp-btn-border-color: #198754;
-            --qp-btn-hover-color: #fff;
-            --qp-btn-hover-bg: #157347;
-            --qp-btn-hover-border-color: #146c43;
-            --qp-btn-disabled-color: #fff;
-            --qp-btn-disabled-bg: #198754;
-            --qp-btn-disabled-border-color: #198754;
+        .qp-btn-success {
+            --qp-btn-color: rgba(255, 255, 255, 1);
+            --qp-btn-bg: rgba(25, 135, 84, 1);
+            --qp-btn-border-color: rgba(25, 135, 84, 1);
+            --qp-btn-hover-color: rgba(255, 255, 255, 1);
+            --qp-btn-hover-bg: rgba(21, 115, 71, 1);
+            --qp-btn-hover-border-color: rgba(20, 108, 67, 1);
+            --qp-btn-disabled-color: rgba(255, 255, 255, 0.65);
+            --qp-btn-disabled-bg: rgba(25, 135, 84, 0.65);
+            --qp-btn-disabled-border-color: rgba(25, 135, 84, 0.65);
         }
         .qp-btn-cta {
           color: var(--qp-btn-color);
@@ -206,15 +206,15 @@ function getStyles(options) {
         }
           
         .qp-btn-danger {
-          --qp-btn-color: #fff;
-          --qp-btn-bg: #dc3545;
-          --qp-btn-border-color: #dc3545;
-          --qp-btn-hover-color: #fff;
-          --qp-btn-hover-bg: #bb2d3b;
-          --qp-btn-hover-border-color: #b02a37;
-          --qp-btn-disabled-color: #fff;
-          --qp-btn-disabled-bg: #dc3545;
-          --qp-btn-disabled-border-color: #dc3545;
+          --qp-btn-color: rgba(255, 255, 255, 1);
+          --qp-btn-bg: rgba(220, 53, 69, 1);
+          --qp-btn-border-color: rgba(220, 53, 69, 1);
+          --qp-btn-hover-color: rgba(255, 255, 255, 1);
+          --qp-btn-hover-bg: rgba(187, 45, 59, 1);
+          --qp-btn-hover-border-color: rgba(176, 42, 55, 1);
+          --qp-btn-disabled-color: rgba(255, 255, 255, 0.65);
+          --qp-btn-disabled-bg: rgba(220, 53, 69, 0.65);
+          --qp-btn-disabled-border-color: rgba(220, 53, 69, 0.65);
         }
         .qp-btn-danger {
           color: var(--qp-btn-color);
@@ -233,15 +233,15 @@ function getStyles(options) {
         }
         
         .qp-btn-info {
-          --bs-btn-color: #000;
-          --bs-btn-bg: #ffc107;
-          --bs-btn-border-color: #ffc107;
-          --bs-btn-hover-color: #000;
-          --bs-btn-hover-bg: #ffca2c;
-          --bs-btn-hover-border-color: #ffc720;
-          --bs-btn-disabled-color: #000;
-          --bs-btn-disabled-bg: #ffc107;
-          --bs-btn-disabled-border-color: #ffc107;
+          --qp-btn-color: rgba(0, 0, 0, 1);
+          --qp-btn-bg: rgba(255, 193, 7, 1);
+          --qp-btn-border-color: rgba(255, 193, 7, 1);
+          --qp-btn-hover-color: rgba(0, 0, 0, 1);
+          --qp-btn-hover-bg: rgba(255, 202, 44, 1);
+          --qp-btn-hover-border-color: rgba(255, 199, 32, 1);
+          --qp-btn-disabled-color: rgba(0, 0, 0, 0.65);
+          --qp-btn-disabled-bg: rgba(255, 193, 7, 0.65);
+          --qp-btn-disabled-border-color: rgba(255, 193, 7, 0.65);
         }
         .qp-btn-info {
           color: var(--qp-btn-color);

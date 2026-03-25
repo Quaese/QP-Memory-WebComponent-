@@ -87,18 +87,17 @@ class QPMemory extends HTMLElement {
 
     // attributes
     this._dimension = 4;
+    this._url = null;
     this._lang = 'de';
-    
+
     // nodes
     this._board = null;
-    this._display = null;
     this._counter = null;
     this._output = null;
     this._btnStart = null;
     this._btnRestart = null;
     this._btnHint = null;
     this._selectSize = null;
-    this._url = null;
     
     // timers and properties
     this._time = null;
@@ -128,6 +127,12 @@ class QPMemory extends HTMLElement {
   // Called when the element is inserted into the DOM
   async connectedCallback() {
     this._covers = this._url ? await this._fetchCovers() : imageList;
+
+    if (!this._covers.length) {
+      console.error('qp-memory: No images available');
+      return;
+    }
+
     this._startGame();
   }
 
@@ -195,6 +200,7 @@ class QPMemory extends HTMLElement {
    * @private
    * @param {string} key - translation key
    * @param {string} [lang='de'] - language code
+   * @param {Array} [args=[]] - dynamic values for template literals
    * @returns {string} translated text, or the key as fallback
    */
   _defaultDict(key, lang = 'de', args = []) {
@@ -248,7 +254,6 @@ class QPMemory extends HTMLElement {
   // Caches references to shadow DOM nodes
   _setNodes() {
     this._board = this.shadowRoot.querySelector(".qp-memory-board");
-    this._display = this.shadowRoot.querySelector(".qp-memory-display");
     this._counter = this.shadowRoot.querySelector(".qp-memory-display-counter");
     this._output = this.shadowRoot.querySelector(".qp-memory-display-output");
     this._btnStart = this.shadowRoot.querySelector('.qp-memory-btn-start');
@@ -330,9 +335,14 @@ class QPMemory extends HTMLElement {
     const index = e.target.dataset.index;
     const roundComplete = this._drawCard(cover, index);
 
-    e.target.style.backgroundImage = this._url 
+    e.target.style.backgroundImage = this._url
       ? `url("/images/cover/${this._covers[cover]}")`
       : `url("${this._covers[cover]}")`;
+
+    // first card drawn — disable hint until round completes
+    if (!roundComplete) {
+      this._btnHint.disabled = true;
+    }
 
     // two cards have been flipped
     if (roundComplete) {
@@ -398,6 +408,8 @@ class QPMemory extends HTMLElement {
 
     // enable events
     this._board && this._board.classList.remove('qp-prevent-events');
+    // re-enable hint button after round
+    this._btnHint && (this._btnHint.disabled = false);
   }
 
   _matchRound() {
@@ -522,9 +534,11 @@ class QPMemory extends HTMLElement {
         <button class="qp-btn qp-btn-cta qp-memory-btn-restart">${this._dict('funMemoryRestart', this._lang)}</button>
         <button class="qp-btn qp-btn-secondary qp-memory-btn-hint">${this._dict('funMemoryHint', this._lang)}</button>
         <select class="qp-btn qp-memory-select-size">
-          ${QPMemory.BOARD_SIZES.map(size =>
-            `<option value="${size}"${size === this._dimension ? ' selected' : ''}>${size} x ${size}</option>`
-          ).join('')}
+          ${QPMemory.BOARD_SIZES
+            .filter(size => (size * size) / 2 <= this._covers.length)
+            .map(size =>
+              `<option value="${size}"${size === this._dimension ? ' selected' : ''}>${size} x ${size}</option>`
+            ).join('')}
         </select>
       </div>
     `;
