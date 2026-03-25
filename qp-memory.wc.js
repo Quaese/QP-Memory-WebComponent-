@@ -12,8 +12,8 @@
  * @attr {string} url       - Optional API endpoint to fetch cover images (e.g. "/media/covers").
  *                            If omitted, the bundled imageList from qp-memory.images.js is used.
  *
- * @prop {string} _width - Board width as CSS value (e.g. "60%", "80%"). Adjusted
- *                         internally based on dimension. Default: "60%"
+ * @prop {string} _width - Board width as CSS value. Adjusted internally based on
+ *                         dimension (e.g. "60%" for <=4, "90dvh" for >4). Default: "60%"
  *
  * @example
  *   <!-- With bundled images (zodiac signs, traffic signs, card suits) -->
@@ -36,13 +36,14 @@
  *     3. Players click cards to reveal images. After two clicks the pair is checked:
  *        - Match:   cards stay visible and are marked as matched.
  *        - No match: cards are flipped back after NEXT_ROUND_DELAY ms.
- *     4. _onWin() fires when all pairs are found, shows elapsed time and moves,
- *        and re-enables the start button. The solved board remains visible.
+ *     4. _onWin() fires when all pairs are found, shows elapsed time (including
+ *        hint penalties: +5 seconds per hint used) and moves, and re-enables
+ *        the start button. The solved board remains visible.
  *
  *   UI sections:
  *     - Display bar   — headline (NxN), elapsed time, move counter
  *     - Board         — CSS grid of card elements with random rotation (-5° to +5°)
- *     - Button bar    — Start, Restart, Hint, board size selector
+ *     - Button bar    — Start, Restart, Hint (+5s penalty per use), board size selector
  *
  *   Translations:
  *     All visible text is resolved via _dict() (Dictionary module) with a
@@ -56,7 +57,7 @@
  *     - "qp-memory.game-start" — fired when a new game starts.
  *         detail: {}
  *     - "qp-memory.game-won"  — fired when all pairs have been found.
- *         detail: { time: number (ms), formattedTime: string ("MM:SS"), moves: number }
+ *         detail: { time: number (ms), formattedTime: string ("MM:SS"), moves: number, hints: number }
  *
  * @dependencies
  *   - ./qp-memory.dictionary.js  — i18n translations
@@ -67,13 +68,12 @@
 
 import Dictionary, { Languages } from './qp-memory.dictionary.js';
 import getStyles from './qp-memory.styles.js';
-import images, { imageList } from './qp-memory.images.js';
+import { imageList } from './qp-memory.images.js';
 
 class QPMemory extends HTMLElement {
-  static DEBOUNCE_DELAY = 500;
+  static PENALTY_SECONDS = 5;
   static NEXT_ROUND_DELAY = 1000;
   static BOARD_SIZES = [2, 4, 6];
-  static ALLOWED_NODES = ['div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
 
   static get observedAttributes() {
     return ["dimension", "url"];
@@ -101,7 +101,6 @@ class QPMemory extends HTMLElement {
     this._url = null;
     
     // timers and properties
-    this._hTimer = null; // debounce timer handle
     this._time = null;
     this._covers = null;
     this._rnd = [];
@@ -110,6 +109,7 @@ class QPMemory extends HTMLElement {
       second: null
     };
     this._moves = 0;
+    this._hints = 0;
     this._width = "60%";
 
     // Methods bound to this (not applicable for event handlers,
@@ -213,7 +213,6 @@ class QPMemory extends HTMLElement {
 
   async _fetchCovers() {
     try {
-      // const response = await fetch('/media/covers');
       const response = await fetch(this._url);
       const data = await response.json();
       return data?.success ? data.covers : [];
@@ -277,21 +276,20 @@ class QPMemory extends HTMLElement {
 
     const memoryCards = this._board.querySelectorAll('.qp-memory-card');
 
-    // Register Event for editing
     Array.from(memoryCards).forEach(card => {
       card.addEventListener('click', this._handleCardClick);
     });
 
     this._btnStart && this._btnStart.addEventListener('click', this._handleStartClick);
     this._btnRestart && this._btnRestart.addEventListener('click', this._handleStartClick);
-    this._btnRHint && this._btnRHint.addEventListener('click', this._handleHintClick);
+    this._btnHint && this._btnHint.addEventListener('click', this._handleHintClick);
     this._selectSize && this._selectSize.addEventListener('change', this._handleSizeChange);
   }
   
   _removeEvents() {
     this._btnStart && this._btnStart.removeEventListener('click', this._handleStartClick);
     this._btnRestart && this._btnRestart.removeEventListener('click', this._handleStartClick);
-    this._btnRHint && this._btnRHint.removeEventListener('click', this._handleHintClick);
+    this._btnHint && this._btnHint.removeEventListener('click', this._handleHintClick);
     this._selectSize && this._selectSize.removeEventListener('change', this._handleSizeChange);
 
     if (!this._board) return;
@@ -315,7 +313,6 @@ class QPMemory extends HTMLElement {
   /* END - Event Controller */
 
   /* START - Event handlers */
-  // Debounced handler: reads the current text, updates the attribute, and triggers a POST
   _handleStartClick() {
     this._startGame();
   }
@@ -323,7 +320,7 @@ class QPMemory extends HTMLElement {
   _handleSizeChange(e) {
     this._dimension = parseInt(e.target.value, 10);
     // adjust width depending on dimension
-    this._width = this._dimension > 4 ? "80%" : "60%";
+    this._width = this._dimension > 4 ? "90dvh" : "60%";
     
     this._startGame();
   }
@@ -344,7 +341,7 @@ class QPMemory extends HTMLElement {
       // increment attempts
       this._moves++;
 
-      this._counter.innerText = this._dict('funMemoryMoves', this._lang, this._moves);
+      this._counter.innerText = this._dict('funMemoryMoves', this._lang, this._moves, this._hints);
 
       // check if cards match
       if (this._checkCards()) {
@@ -359,6 +356,9 @@ class QPMemory extends HTMLElement {
     const hintIdx = Math.floor(Math.random() * this._rnd.length);
     const hintCards = this._board.querySelectorAll(`[data-cover="${this._rnd[hintIdx]}"]`);
 
+    // time penalty
+    this._hints++;
+    
     hintCards.forEach(card => {
       card.classList.add('qp-memory-card-hint');
     });
@@ -367,6 +367,8 @@ class QPMemory extends HTMLElement {
       hintCards.forEach(card => {
         card.classList.remove('qp-memory-card-hint');
       });
+      
+      this._counter.innerText = this._dict('funMemoryMoves', this._lang, this._moves, this._hints);
     }, QPMemory.NEXT_ROUND_DELAY);
   }
   /* END - Event handlers */
@@ -379,12 +381,11 @@ class QPMemory extends HTMLElement {
     this._render();
     
     this._time = new Date().getTime();
+    this._hints = 0;
     
     this._moves = 0;
     this._btnStart.disabled = true;
     this._btnHint.disabled = false;
-    
-    this._btnHint && this._btnHint.addEventListener('click', this._handleHintClick);
     
     this._dispatchEvent("qp-memory.game-start");
   }
@@ -439,12 +440,14 @@ class QPMemory extends HTMLElement {
     this._btnHint.disabled = true;
     
     this._time = new Date().getTime() - this._time;
+    this._time += this._hints * (QPMemory.PENALTY_SECONDS * 1000);
     this._output.innerText = this._dict('funMemoryTime', this._lang, this._formatTimestamp(this._time));
     
     this._dispatchEvent("qp-memory.game-won", {
       time: this._time,
       formattedTime: this._formatTimestamp(this._time),
       moves: this._moves,
+      hints: this._hints
     });
   }
 
@@ -476,12 +479,7 @@ class QPMemory extends HTMLElement {
     return false;
   }
 
-  // Clears the debounce timer and removes event listeners
   _reset() {
-    if (this._hTimer) {
-      clearTimeout(this._hTimer);
-    }
-
     this._removeEvents();
   }
   /* END - Game Controller */
@@ -515,7 +513,7 @@ class QPMemory extends HTMLElement {
       <div class="qp-memory-display">
         <div class="qp-memory-display-title">${this._dict('funMemoryHeadline', this._lang, this._dimension)}</div>
         <div class="qp-memory-display-output">---</div>
-        <div class="qp-memory-display-counter">${this._dict('funMemoryMoves', this._lang, 0)}</div>
+        <div class="qp-memory-display-counter">${this._dict('funMemoryMoves', this._lang, 0, 0)}</div>
       </div>
       ${this._setStyles()}
       ${this._createBoard()}
