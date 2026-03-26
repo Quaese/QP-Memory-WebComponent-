@@ -127,7 +127,7 @@ qp-memory/
   qp-memory.styles.js        — Scoped styles (loaded via getStyles())
   qp-memory.dictionary.js    — i18n translations
   qp-memory.images.js        — Bundled image set with resolved URLs
-  qp-memory-background.svg   — Card back background image
+  images/qp-memory-background.svg   — Card back background image
   images/                    — Image assets
     pisces.svg ... aquarius.svg       — Zodiac signs (12)
     stop.svg, yield.svg, ...          — Traffic signs (7)

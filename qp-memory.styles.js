@@ -4,7 +4,7 @@ function getStyles(options) {
   options = Object.assign({}, { dimension: 3 }, options);
   
   const { dimension } = options;
-  const bgUrlMemoryCard = new URL('./qp-memory-background.svg', import.meta.url).href;
+  const bgUrlMemoryCard = new URL('./images/qp-memory-background.svg', import.meta.url).href;
 
   
   return `

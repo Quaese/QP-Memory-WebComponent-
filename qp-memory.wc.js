@@ -217,6 +217,11 @@ class QPMemory extends HTMLElement {
     return fallback[key]?.[lang] || key;
   }
 
+  /**
+   * Fetches the covers for the current memory game from the server.
+   * @returns {Promise<string[]>} An array of cover filenames if successful, otherwise an empty array.
+   * @throws {Error} If the server returns an error or the response is not a JSON object.
+   */
   async _fetchCovers() {
     try {
       const response = await fetch(this._url);
@@ -228,6 +233,12 @@ class QPMemory extends HTMLElement {
     }
   }
 
+  /**
+   * Builds a shuffled list of card pairs for the current board.
+   * Picks (dimension² / 2) unique random indices from _covers, duplicates them,
+   * then shuffles the result using the Fisher-Yates algorithm.
+   * @private
+   */
   _randomList() {
     const len = (this._dimension * this._dimension) / 2;
     let i = 0;
@@ -251,7 +262,10 @@ class QPMemory extends HTMLElement {
     }
   }
 
-  // Caches references to shadow DOM nodes
+  /**
+   * Caches references to shadow DOM nodes and sets the board width CSS variable.
+   * @private
+   */
   _setNodes() {
     this._board = this.shadowRoot.querySelector(".qp-memory-board");
     this._counter = this.shadowRoot.querySelector(".qp-memory-display-counter");
@@ -265,6 +279,12 @@ class QPMemory extends HTMLElement {
     this._board.style.setProperty('--boardWidth', `${this._width}`);
   }
   
+  /**
+   * Formats a duration in milliseconds as "MM:SS".
+   * @private
+   * @param {number} ms - duration in milliseconds
+   * @returns {string} formatted time string, e.g. "02:35"
+   */
   _formatTimestamp(ms) {
     const totalSeconds = Math.floor(ms / 1000); // timestamp in seconds
     const minutes = Math.floor(totalSeconds / 60); // minutes
@@ -276,6 +296,11 @@ class QPMemory extends HTMLElement {
   /* END - Tools, Helpers */
 
   /* START - Event Controller */
+  /**
+   * Registers click/change event listeners on card elements, buttons, and the size selector.
+   * Aborts silently if the board has not been rendered yet.
+   * @private
+   */
   _attachEvents() {
     if (!this._board) return;
 
@@ -291,6 +316,11 @@ class QPMemory extends HTMLElement {
     this._selectSize && this._selectSize.addEventListener('change', this._handleSizeChange);
   }
   
+  /**
+   * Removes all event listeners.
+   *
+   * This is called in the disconnectedCallback to clean up the component.
+   */
   _removeEvents() {
     this._btnStart && this._btnStart.removeEventListener('click', this._handleStartClick);
     this._btnRestart && this._btnRestart.removeEventListener('click', this._handleStartClick);
@@ -306,6 +336,12 @@ class QPMemory extends HTMLElement {
     });
   }
   
+  /**
+   * Dispatches a CustomEvent that bubbles and crosses the Shadow DOM boundary.
+   * @private
+   * @param {string} type - event name, e.g. "qp-memory.game-won"
+   * @param {Object} [payload={}] - data exposed via event.detail
+   */
   _dispatchEvent(type, payload = {}) {
     this.dispatchEvent(
       new CustomEvent(type, {
@@ -318,10 +354,20 @@ class QPMemory extends HTMLElement {
   /* END - Event Controller */
 
   /* START - Event handlers */
+  /**
+   * Handles click on Start / Restart button. Starts a new game.
+   * @private
+   */
   _handleStartClick() {
     this._startGame();
   }
 
+  /**
+   * Handles change on the board size selector.
+   * Updates dimension, adjusts board width, and starts a new game.
+   * @private
+   * @param {Event} e - change event from the select element
+   */
   _handleSizeChange(e) {
     this._dimension = parseInt(e.target.value, 10);
     // adjust width depending on dimension
@@ -330,6 +376,13 @@ class QPMemory extends HTMLElement {
     this._startGame();
   }
 
+  /**
+   * Handles click on a card element.
+   * Reveals the card image, disables hint mid-round, increments move counter,
+   * and triggers match/unmatch check after the second card is flipped.
+   * @private
+   * @param {Event} e - click event; expects e.target to have data-cover and data-index
+   */
   _handleCardClick(e) {
     const cover = e.target.dataset.cover;
     const index = e.target.dataset.index;
@@ -362,6 +415,13 @@ class QPMemory extends HTMLElement {
     }
   }
   
+  /**
+   * Handles click on the Hint button.
+   * Highlights a random matching pair temporarily and increments the hint counter
+   * (each hint adds PENALTY_SECONDS to the final time).
+   * @private
+   * @param {Event} e - click event
+   */
   _handleHintClick(e) {
     const hintIdx = Math.floor(Math.random() * this._rnd.length);
     const hintCards = this._board.querySelectorAll(`[data-cover="${this._rnd[hintIdx]}"]`);
@@ -384,6 +444,12 @@ class QPMemory extends HTMLElement {
   /* END - Event handlers */
 
   /* START - Game Controller */
+  /**
+   * Initializes and starts a new game.
+   * Resets state, generates a shuffled card list, renders the board,
+   * records the start time, and dispatches "qp-memory.game-start".
+   * @private
+   */
   _startGame() {
     this._rnd = [];
     this._resetRound();
@@ -400,6 +466,11 @@ class QPMemory extends HTMLElement {
     this._dispatchEvent("qp-memory.game-start");
   }
 
+  /**
+   * Resets the current round state (first/second card selection),
+   * re-enables pointer events on the board, and re-enables the hint button.
+   * @private
+   */
   _resetRound() {
     this._round = {
       first: null,
@@ -412,6 +483,12 @@ class QPMemory extends HTMLElement {
     this._btnHint && (this._btnHint.disabled = false);
   }
 
+  /**
+   * Handles a successful match. Marks both cards as matched, removes their
+   * click listeners, filters the matched cover from _rnd, resets the round,
+   * and triggers _onWin() if no cards remain.
+   * @private
+   */
   _matchRound() {
     // loop over all found cards with same cover index
     this._board.querySelectorAll(`[data-cover="${this._round.first.cover}"]`).forEach(card => {
@@ -432,6 +509,11 @@ class QPMemory extends HTMLElement {
     }
   }
 
+  /**
+   * Handles a failed match. Hides both revealed card images
+   * (removes background-image) and resets the round.
+   * @private
+   */
   _unmatchRound() {
     if (this._round.first) {
       this._board.querySelectorAll(`[data-cover="${this._round.first.cover}"]`).forEach(card => {
@@ -447,6 +529,13 @@ class QPMemory extends HTMLElement {
     this._resetRound();
   }
 
+  /**
+   * Called when all pairs have been found.
+   * Calculates final time (elapsed + hint penalties), updates the display,
+   * re-enables the start button, disables hint, and dispatches "qp-memory.game-won".
+   * @private
+   * @fires qp-memory.game-won
+   */
   _onWin() {
     this._btnStart.disabled = false;
     this._btnHint.disabled = true;
@@ -463,6 +552,14 @@ class QPMemory extends HTMLElement {
     });
   }
 
+  /**
+   * Records a card selection for the current round.
+   * Stores the first or second card (preventing the same card from being picked twice).
+   * @private
+   * @param {string} card - the data-cover value of the clicked card
+   * @param {string} index - the data-index value of the clicked card
+   * @returns {boolean} true if both cards have been drawn (round complete)
+   */
   _drawCard(card, index) {
     let roundComplete = false;
 
@@ -483,6 +580,11 @@ class QPMemory extends HTMLElement {
     return roundComplete;
   }
 
+  /**
+   * Checks whether the two drawn cards in the current round are a matching pair.
+   * @private
+   * @returns {boolean} true if both cards share the same cover index
+   */
   _checkCards() {
     if (this._round.first && this._round.second) {
       return this._round.first.cover === this._round.second.cover;
@@ -491,16 +593,34 @@ class QPMemory extends HTMLElement {
     return false;
   }
 
+  /**
+   * Tears down the current state by removing all event listeners.
+   * Called before re-rendering and on disconnect.
+   * @private
+   */
   _reset() {
     this._removeEvents();
   }
   /* END - Game Controller */
 
   /* START - UI Controller Methods */
+  /**
+   * Returns the scoped <style> block for the component.
+   * Delegates to the external getStyles() module, passing the current dimension.
+   * @private
+   * @returns {string} HTML string containing a <style> element
+   */
   _setStyles() {
     return getStyles.call(this, {dimension: this._dimension});
   }
 
+  /**
+   * Generates the HTML string for the game board.
+   * Creates dimension² card elements inside a CSS grid wrapper,
+   * each with a random rotation between -5° and +5°.
+   * @private
+   * @returns {string} HTML string containing the board wrapper and card divs
+   */
   _createBoard() {
     const totalCards = this._dimension * this._dimension;
     let cards = '';
@@ -517,7 +637,12 @@ class QPMemory extends HTMLElement {
     </div>`;
   }
 
-  // Renders the shadow DOM and caches node references
+  /**
+   * Renders the full shadow DOM (display bar, styles, board, button bar),
+   * caches node references, and attaches event listeners.
+   * Called on game start and when observed attributes change.
+   * @private
+   */
   _render() {
     this._reset();
 
