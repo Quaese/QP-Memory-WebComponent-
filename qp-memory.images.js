@@ -27,6 +27,18 @@ const images = {
   playStreet: resolve('./images/play-street.svg'),
   pedestrianBikePath: resolve('./images/pedestrian-bike-path.svg'),
 
+  // Misc
+  musicNote: resolve('./images/music-note.svg'),
+  musicNotes: resolve('./images/music-notes.svg'),
+  footprint01: resolve('./images/footprint_01.svg'),
+  footprint02: resolve('./images/footprint_02.svg'),
+  butterfly: resolve('./images/butterfly.svg'),
+  snowflake: resolve('./images/snowflake.svg'),
+  starStroked: resolve('./images/star-stroked.svg'),
+  starFilled: resolve('./images/star-filled.svg'),
+  starRotated: resolve('./images/star-rotated.svg'),
+  starRotatedFilled: resolve('./images/star-rotated-filled.svg'),
+
   // Playing card suits
   spades: resolve('./images/spades.png'),
   hearts: resolve('./images/hearts.png'),

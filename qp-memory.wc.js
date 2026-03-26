@@ -73,7 +73,7 @@ import { imageList } from './qp-memory.images.js';
 class QPMemory extends HTMLElement {
   static PENALTY_SECONDS = 5;
   static NEXT_ROUND_DELAY = 1000;
-  static BOARD_SIZES = [2, 4, 6];
+  static BOARD_SIZES = [2, 4, 6, 8];
 
   static get observedAttributes() {
     return ["dimension", "url"];
