@@ -76,7 +76,7 @@ class QPMemory extends HTMLElement {
   static BOARD_SIZES = [2, 4, 6, 8];
 
   static get observedAttributes() {
-    return ["dimension", "url"];
+    return ["dimension", "url", "lang"];
   }
 
   constructor() {
@@ -152,6 +152,10 @@ class QPMemory extends HTMLElement {
         break;
       case "url":
         this._url = newValue;
+        break;
+      case "lang":
+        this._lang = newValue;
+        this._initializeDictionary();
         break;
     }
 
