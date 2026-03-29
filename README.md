@@ -4,7 +4,7 @@ A memory/matching card game as a Web Component. Image sources are configurable:
 either fetched from a server API (via the `url` attribute) or loaded from the
 bundled local image set as fallback. Players flip pairs of cards to find matching images.
 
-**[Live Demo](https://quaese.github.io/QP-Memory-WebComponent-/)**
+**[Live Demo](https://quaese.github.io/QP-Memory-WebComponent/)**
 
 ## Usage
 
